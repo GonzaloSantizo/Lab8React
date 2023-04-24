@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+
+    body {
+        font-family: sans-serif;
+        margin: 0;
+        font-size: 1.5em;
+        text-align: center;
+        background-image: url("https://images.unsplash.com/photo-1553095066-5014bc7b7f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8d2FsbCUyMGJhY2tncm91bmR8ZW58MHx8MHx8&w=1000&q=80");
+        background-color: #cccccc;
+        color: #fff;
+      }
+
+      .Game {
+        max-width: 860px;
+        margin: 40px auto;
+      }
+
+      button{
+        background: none;
+        border: 2px solid #fff;
+        padding: 6px 12px;
+        border-radius: 4px;
+        color: #fff;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 1em;
+      }
+
+      button:hover {
+        background: #012A4A;
+        color: #fff;
+        background-color: #7209b7;
+      }
+
+      .instructions-font {
+        font-size: large;
+      }
+
+      .juego_terminado {
+        font-weight: bold;
+        margin-top: 23px;
+      }
+
+      .card-grid{
+        margin-top: 40px;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        grid-gap: 20px;
+        
+      }
+
+      .targeta_frontal {
+        height: 200px;
+        width: 200px;
+        background-color: #a0c4ff;
+      }
+
+      .targetra_trasera {
+        height: 200px;
+        width: 200px;
+      }
+
+      .image-card-dimensions {
+        height: auto;
+        width: 100%;
+        text-align: center;
+        margin-top: 20%;
+      }
+      .card .targeta_frontal {
+        border: 3px solid #fff;
+        border-radius: 6px;
+        transform: rotateY(90deg);
+        transition: all ease-in 0.2s;
+        position: absolute;
+      }
+
+      .volteada .targeta_frontal {
+        border: 3px solid #fff;
+        border-radius: 6px;
+        transform: rotateY(0deg);
+        transition-delay: 0.2s;
+      }
+
+      .card .targetra_trasera {
+        border: 2px solid #fff;
+        border-radius: 6px;
+        transition: all ease-in 0.4s;
+        transition-delay: 0.2s;
+      }
+
+      .volteada .targetra_trasera {
+        border: 2px solid #fff;
+        border-radius: 6px;
+        transform: rotateY(90deg);
+        transition-delay: 0s;
+      }
+
+
+      .card {
+        position: relative;
+      }
+
+      .card div {
+        width: 100%;
+        display: block;
+        border-radius: 6px;
+      }
+
+      .volteada {
+        height: 200px;
+        width: 200px;
+      }
+
+      .no-volteada {
+        height: 200px;
+        width: 200px;
+      }
+
+     
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      const {useState, useEffect} = React
+
+      const card_back = {"src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_5VWC61-37pojJafjSoVqvIEzlKQ2WiBTZA&usqp=CAU"}
+      const card_Images = [
+        { "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhJm4pCB11kL5rV7A2XGA0tdQoBWP4tiHtXw&usqp=CAU", matched:false },
+        { "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzsbw9SV8WQkgnq6R_7fAI7Q9L00zQ0xhPJg&usqp=CAU", matched:false },
+        { "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQUOQFOO0gmsCWjD7mjZjjw4Jrlpb4Ut1PoA&usqp=CAU", matched:false },
+        { "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnIfYM7925OF01T7eF9Pu6UpAOvIExlKPdXg&usqp=CAU", matched:false },
+        { "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2vQVoCJ0RxWfSkq5INI_-R-HZqrbg2rT-Ww&usqp=CAU", matched:false},
+        { "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQ93vbgj9ChXMiGMj-yHGneU9C0_q1m5KQ0Q&usqp=CAU", matched:false}
+    ]
+
+      function Bob_memory() {
+        const [cartas, set_cartas] = useState([])
+        const [turnos, set_turnos] = useState(0)
+        const [juego_terminado, set_juego_terminado] = useState(false)
+        const [Eleccion_uno, set_Eleccion_uno] = useState(null)
+        const [Eleccion_dos, set_Eleccion_dos] = useState(null)
+        const [desactivadod, set_desactivado] = useState(false)
+
+
+        const ver_status = () => {
+          let cartas_contador = 0
+          cartas.forEach(card_element => {
+            console.log(card_element.matched.toString())
+            if(card_element.matched){
+              cartas_contador++
+            }
+          })
+          console.log(`Contador: ${cartas_contador}`)
+          return cartas_contador
+        }
+
+        //Giro
+        const shuffle = () => {
+          const shuffle = [...card_Images, ...card_Images]
+            .sort(() => Math.random() - 0.5)
+            .map((card) => ({ ...card, id: Math.random() }))
+
+            set_Eleccion_uno(null)
+            set_Eleccion_dos(null)
+            set_cartas(shuffle)
+            set_turnos(0)
+            set_juego_terminado(false)
+        }
+
+        //eleccion
+        const Manejar_Eleccion = (card) => {
+          Eleccion_uno ? set_Eleccion_dos(card) : set_Eleccion_uno(card)
+        }
+
+        
+
+        //compare cartas
+        useEffect(() => {
+          if(Eleccion_uno && Eleccion_dos){
+            set_desactivado(true)
+            if(Eleccion_uno.src === Eleccion_dos.src){
+              console.log('coiciden')
+              set_cartas(recartas => {
+                return recartas.map( card =>{
+                  if(card.src === Eleccion_uno.src){
+                    return {...card, matched:true}
+                  } 
+                  else {
+                    return card
+                  }
+                })
+              })
+              reiniciar_contador()
+            } 
+            else{
+              console.log('no coiciden')
+              setTimeout(() => reiniciar_contador(), 1000)
+            }
+          }
+        }, [Eleccion_uno, Eleccion_dos])
+
+        //reset choices and turnos
+        const reiniciar_contador = () => {
+          set_Eleccion_uno(null)
+          set_Eleccion_dos(null)
+          set_turnos(returnos => returnos + 1)
+          set_desactivado(false)
+        }
+
+        console.log(cartas, turnos)
+
+        useEffect(() => {
+          shuffle()
+        }, [])
+
+        useEffect(() => {
+          ver_status()
+        }, [Eleccion_uno, Eleccion_dos])
+
+        useEffect(() => {
+          if(ver_status()===12){
+            set_juego_terminado(true)
+            setTimeout(() => console.log(`Juego Finalizado: ${juego_terminado.toString()}`), 1000)
+          }
+        }, 
+        [ver_status()])
+        
+
+        return (
+          <div className="Game" >
+            <h1>Spongebob Squarepants</h1>
+            <button onClick = {shuffle} >New Game</button>
+            <p>Movement counter: {turnos}</p>
+            <div className='juego_terminado' >{juego_terminado ? 'JUEGO COMPLETADO :)' : ''}</div>
+            <div className="card-grid">
+              {cartas.map(card => (
+                <Single_Card 
+                  key={card.id} 
+                  card={card} 
+                  Manejar_Eleccion={Manejar_Eleccion}
+                  carta_volteada={card === Eleccion_uno || card === Eleccion_dos || card.matched}
+                  desactivadod={desactivadod}
+                />
+              ))}
+            </div>
+          </div>
+        )
+      }
+
+      function Single_Card({card, Manejar_Eleccion, carta_volteada, desactivadod}) {
+
+        const handle_Click = () => {
+          if(!desactivadod){
+            Manejar_Eleccion(card)
+          }
+        }
+
+        return (
+          <div className="card">
+            <div className={carta_volteada ? "volteada" : "no-volteada"} >
+              <div className="targeta_frontal">
+                <img 
+                  className="image-card-dimensions"
+                  src={card.src} 
+                  alt="card front" 
+                />
+              </div>
+                <img 
+                  className="targetra_trasera" 
+                  src={card_back.src} 
+                  onClick={handle_Click} 
+                  alt="card back" 
+                />
+              </div>
+          </div>
+        )
+      }
+    
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<Bob_memory/>);
+    </script>
+  </body>
+</html>
